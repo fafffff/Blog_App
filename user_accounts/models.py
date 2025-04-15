@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import BaseUserManager,AbstractBaseUser,PermissionsMixin
+from django.contrib.auth.models import BaseUserManager,AbstractBaseUser,PermissionsMixin,Group,Permission
 import uuid
 from django_countries.fields import CountryField
 class CustomUserManager(BaseUserManager):
@@ -35,10 +35,10 @@ class CustomUser(models.Model):
     Id=models.UUIDField(primary_key=True, 
                         editable=False,unique=True,default=uuid.uuid4)
     
-    user_Name=models.CharField(max_length=100,unique=True,required=True)
-    email=models.EmailField(unique=True,max_length=100,required=True)
-    password=models.CharField(max_length=100,required=True,required=True)
-    First_Name=models.CharField(max_length=100,blank=True,null=True,required=True)
+    user_Name=models.CharField(max_length=100,unique=True)
+    email=models.EmailField(unique=True,max_length=100)
+    password=models.CharField(max_length=100,required=True)
+    First_Name=models.CharField(max_length=100,blank=True,null=True,)
     Last_Name=models.CharField(max_length=100,blank=True,null=True)
     phone_number=models.CharField(max_length=15,blank=True,null=True)
     DoB=models.DateField(blank=True,null=True)
@@ -55,4 +55,23 @@ class CustomUser(models.Model):
     last_login=models.DateTimeField(auto_now=True)
     updated_at=models.DateTimeField(auto_now=True)
     
+    groups=models.ManyToManyField(
+        Group,
+        related_name='custom_user_group',
+        blank=True,
+        help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.'
+    )
+    user_permissions=models.ManyToManyField(
+        Permission,
+        related_name='custom_user_permissions',
+        blank=True,
+        help_text='Specific permissions for this user.'
+    )
     objects=CustomUserManager()
+    USERNAME_FIELD='email'
+    REQUIRED_FIELDS=['user_Name','First_Name','Last_Name']
+    
+    def __str__(self):
+        return f"{self.First_Name} {self.Last_Name}-{self.email}"
+
+          
